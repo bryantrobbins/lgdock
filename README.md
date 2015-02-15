@@ -22,7 +22,8 @@ gradle buildImage
 gradle buildPaper
 ```
 
-This will produce "example.pdf" in your current directory.
+This will produce "example.pdf" in your current directory. Note that buildImage only needs to occur
+once, or upon modification of the build.gradle's Dockerfile (read more about internals below).
 
 ## Available Tasks
 
