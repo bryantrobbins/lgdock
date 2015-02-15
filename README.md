@@ -39,10 +39,14 @@ bibliography
 The Dockerfile is defined inline in the build.gradle script. It installs a basic set of texlive packages
 and R statistics packages. The Gradle tasks run some commands locally and some within Docker containers.
 
+I am using the [docker-java](https://github.com/docker-java/docker-java) library to communicate
+with the Docker host over its Remote API.
+
 ## Why Bro?
 
 It may seem like Gradle and Docker are much heavier dependencies than the likes of LaTeX and R. First,
-I'm not 100% sure that's the truth, because LaTeX distributions tend to be HUGE. However, I still like
+I'm not 100% sure that's the truth, because LaTeX distributions tend to be HUGE and their packages
+(especially away from *nix) interweaved. However, I still like
 the portability of having a known LaTeX and R setup that goes with me. Also, Boot2Docker is very easy
 to install, and affords users the ability to use these tools in their more natural *nix environment
 without having to remember all of the quirks by hand.
