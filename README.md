@@ -43,6 +43,9 @@ bibliography
 The Dockerfile is defined inline in the build.gradle script. It installs a basic set of texlive packages
 and R statistics packages. The Gradle tasks run some commands locally and some within Docker containers.
 
+When running in Docker containers, the current directory is mounted as the location "/papers" in the
+container thanks to a Volume.
+
 I am using the [docker-java](https://github.com/docker-java/docker-java) library to communicate
 with the Docker host over its Remote API.
 
