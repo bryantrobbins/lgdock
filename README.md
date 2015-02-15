@@ -54,6 +54,3 @@ working on dissertation research; but feel free to post an issue if you have ide
 submit PRs so we can REALLY get this rolling.
 
 Thanks for stopping by!
-
-
-
