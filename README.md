@@ -49,6 +49,14 @@ container thanks to a Volume.
 I am using the [docker-java](https://github.com/docker-java/docker-java) library to communicate
 with the Docker host over its Remote API.
 
+To extend this setup, just define additional tasks in the build.gradle script. If you want to run
+a new LaTeX or R command, you should check out the doCmd helper function in the Gradle script, which
+runs a given String as a command in the Docker container.
+
+If you need to install additonal dependencies in the Docker container, look at the multi-line String
+defined as "dockerfileContent". You'll see several examples of installing Ubuntu packages. Note that
+after any modifications to this String, you will need to run buildImage.
+
 ## Why Bro?
 
 It may seem like Gradle and Docker are much heavier dependencies than the likes of LaTeX and R. First,
