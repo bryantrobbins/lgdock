@@ -149,8 +149,8 @@ task buildPaper <<
 	doCmd(client, bibtexCmd)
 
 	// Execute LaTex Cmd
-	doCmd(client, bibtexCmd)
+	doCmd(client, latexCmd)
 
 	// Execute LaTex Cmd
-	doCmd(client, bibtexCmd)
+	doCmd(client, latexCmd)
 }
