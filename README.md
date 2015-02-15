@@ -9,11 +9,14 @@ its HTTP interface. If you are using [boot2docker](http://boot2docker.io/) on a 
 default configuration. If you are on a Linux host with Docker directly installed, check out
 [this blog post](http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html).
 
-Once you have tools installed, you need to tell gradle where to find Docker and your LaTex file. The
-script uses Gradle properties for this. You can use the provided gradle.properties file OR just set
-properties at the command-line like so:
+Once you have tools installed, you need to tell gradle where to find Docker and your LaTex file:
+* dockerUrl: the path to your URL, including protocol, host, and port (e.g., https://192.168.59.103:2376)
+* base: the base name of your LaTex file (e.g., "example" to build example.tex)
+
+The script uses Gradle properties for this. You can use the provided gradle.properties file to define them 
+OR just set properties from the command line like so:
 ```
-gradle -PdockerUrl="https://..." ...
+gradle -Pbase="example" -PdockerUrl="https://..." ...
 ```
 With these properties set, you can now run tasks. A simple build of a PDF currently requires running two
 tasks. (Hopefully, these can be safely linked in the future!)
