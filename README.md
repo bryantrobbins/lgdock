@@ -1,4 +1,4 @@
-lgdock is a tool for preparing LaTeX papers. It only depends on having Docker installed on a host, and also works with boot2docker.
+lgdock is a tool for preparing LaTeX papers. It depends on having Docker and Gradle installed on a host, and also works with boot2docker.
 
 ## Usage
 
