@@ -10,16 +10,20 @@ default configuration. If you are on a Linux host with Docker directly installed
 [this blog post](http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html).
 
 Once you have tools installed, you need to tell gradle where to find Docker and your LaTex file:
+* base: the base name to use for you final LaTex files
 * dockerUrl: the path to your URL, including protocol, host, and port (e.g., https://192.168.59.103:2376)
-* base: the base name of your LaTex file (e.g., "example" to build example.tex)
+* source: Your LaTeX input file
 
 The script uses Gradle properties for this. You can use the provided gradle.properties file to define them 
 OR just set properties from the command line like so:
+
 ```
-gradle -Pbase="example" -PdockerUrl="https://..." ...
+gradle -Psource="parts.tex" -Pbase="example" -PdockerUrl="https://..." ...
 ```
-With these properties set, you can now run tasks. A simple build of a PDF currently requires running two
-tasks. (Hopefully, these can be safely linked in the future!)
+
+With these properties set, you can now run tasks on the given sample files. A simple build
+of a PDF currently requires running two tasks explicitly.
+(Hopefully, these can be safely linked in the future!)
 
 ```
 gradle buildImage
@@ -29,14 +33,32 @@ gradle buildPaper
 This will produce "example.pdf" in your current directory. Note that buildImage only needs to occur
 once, or upon modification of the build.gradle's Dockerfile (read more about internals below).
 
+buildPaper also runs a task singleFile to convert your input LaTeX file to a single LaTeX source. This
+allows the input file to use the "input" command to define and reference external LaTeX sources. Because
+"parts.tex" is defined as "source" and "example" as "base", parts.tex is converted into example.tex by
+singleFile, and example.tex is converted into example.pdf by buildPaper. After running buildPaper or
+singleFile directly, you will notice a new file example.tex generated. If you compare this file
+to the original parts.tex, you will see the "input" command replaced with the actual content of
+"hello.tex".
+
+Conversion to a single LaTeX source is often required for conference and journal submissions. In the
+future, it also should be possible with the tool to skip the singleFile task - but this is not
+yet implemented.
+
 ## Available Tasks
+
+### More documentation coming soon!
 
 Available tasks are:
 * buildImage - build the base Docker image
 * buildPaper - Run the sequence of pdflatex, bibtex, pdflatex, pdflatex to generate a PDF with optional
-bibliography
+bibliography (will also run singleFile)
 * cleanAll - remove paper files and the Docker image. NOT recommended unless you are tweaking the image
 * cleanPaper - remove intermediate paper files
+* generateFigure - generate a LaTeX figure block, given an image
+* generateTable - generate a LaTeX table block, given a CSV file of raw data
+* runRscript - run an R script and save output
+* singleFile - produce a single LaTeX file from a file which uses "input" commands
 
 ## Under the Covers
 
@@ -68,9 +90,11 @@ without having to remember all of the quirks by hand.
 
 ## What's next?
 
-I would like to add additional tasks to this tool for building tables, figures, and R outputs for LaTex
-documents. I don't know when I'll have time to do this as I'm currently working full-time on top of
-working on dissertation research; but feel free to post an issue if you have ideas, or even better, to
-submit PRs so we can REALLY get this rolling.
+I think this could be a pretty useful tool for making LaTex and R more usable. It's my plan to
+continue to expand the tasks available here as I have a need for them myself.
+
+I probably won't have time to make things and pretty and robust as I'd like,  as I'm currently
+working full-time on top of working on dissertation research. If you do have ideas or questions,
+feel free to post an issue or send me a Pull Request.
 
 Thanks for stopping by!
