@@ -8,8 +8,10 @@ To start, you can clone this repository or otherwise drop the gradle-related fil
 * gradlew.bat
 * gradle/
 * build.gradle
+* gradle.properties
 
-Docker is used to isolate the execution of LaTeX in a container, and Gradle is used to wrap tasks into a(n) (arguably) better interface.
+Docker is used to isolate the execution of LaTeX in a container, and Gradle is used to wrap tasks into a pretty nice interface (perhaps
+that's debatable ... but I like it).
 
 You will need to have Docker installed and a Docker daemon running on your machine. Your Docker installation will need to expose
 its HTTP interface. If you are using [boot2docker](http://boot2docker.io/) on a Windows or Mac computer, this is the
