@@ -29,7 +29,7 @@ The script uses Gradle properties for this. You can use the provided gradle.prop
 living in your working directory) OR just set properties from the command line like so:
 
 ```
-gradle -Psource="parts.tex" -Pbase="example" -PdockerUrl="https://..." ...
+gradle-Pbase="example" -PdockerUrl="https://..." ...
 ```
 
 With these properties set, you can now run tasks on the given sample files. A simple build
@@ -41,20 +41,13 @@ of a PDF currently requires running two tasks explicitly.
 ./gradlew buildPaper
 ```
 
-This will produce "example.pdf" in your current directory. Note that buildImage only needs to occur
-once, or upon modification of the build.gradle's Dockerfile (read more about internals below).
+The buildImage task pulls down the supporting Docker base image and installs LaTeX packages. This task will take some time, especially 
+if you have a slow Internet connection. You don't typically need to repeat this task (only when you modify the inline Dockerfile
+built into the build.gradle script).
 
-buildPaper also runs a task singleFile to convert your input LaTeX file to a single LaTeX source. This
-allows the input file to use the "input" command to define and reference external LaTeX sources. Because
-"parts.tex" is defined as "source" and "example" as "base", parts.tex is converted into example.tex by
-singleFile, and example.tex is converted into example.pdf by buildPaper. After running buildPaper or
-singleFile directly, you will notice a new file example.tex generated. If you compare this file
-to the original parts.tex, you will see the "input" command replaced with the actual content of
-"hello.tex".
-
-Conversion to a single LaTeX source is often required for conference and journal submissions. In the
-future, it also should be possible with the tool to skip the singleFile task - but this is not
-yet implemented.
+The buildPaper task will produce "example-single.pdf" in your current directory, which is your finalized document. The input file
+"example.tex" is used as input, corresponding to the value of the "base" property. Prior to running LaTeX, the input file is processed
+for any "\input" entries, producing a "base-single.tex" variant.
 
 ## Available Tasks
 
@@ -94,7 +87,7 @@ after any modifications to this String, you will need to run buildImage.
 
 It may seem like Gradle and Docker are much heavier dependencies than the likes of LaTeX and R. First,
 I'm not 100% sure that's the truth, because LaTeX distributions tend to be HUGE and their packages
-(especially away from *nix) interweaved. However, I still like
+(especially away from Linux platforms) interweaved. However, I still like
 the portability of having a known LaTeX and R setup that goes with me. Also, boot2Docker is very easy
 to install, and affords users the ability to use these tools in their more natural *nix environment
 without having to remember all of the quirks by hand.
