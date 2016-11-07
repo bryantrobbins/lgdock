@@ -70,6 +70,10 @@ def getCurrentDirectory(){
 	new File(".").getAbsoluteFile().parent.toString()
 }
 
+def getCurrentUser(){
+	"id -u".execute().text.toString().trim()
+}
+
 def getMount(){
 	new Volume("/paper");
 }
@@ -86,13 +90,30 @@ def deleteFile(file){
 	new File(file).delete()
 }
 
+def isLinux() {
+	def osname = System.getProperty("os.name")
+	if(osname.toLowerCase().contains("windows")) {
+		false
+	} else {
+		true
+	}
+}
+
 def doCmd(client, cmd){
 	def imageTag = getImageTag()
 	def mount = getMount()
 	def wd = getCurrentDirectory()
 
 	withClient(client){
-		def container = it.createContainerCmd(imageTag).withVolumes(mount).withBinds(new Bind(wd, mount))
+		def container = it.createContainerCmd(imageTag)
+				  .withVolumes(mount)
+				  .withBinds(new Bind(wd, mount))
+
+		if(isLinux()) {
+			def uid = getCurrentUser()
+			container = container.withUser("${uid}:${uid}")
+		}
+
 		def resp = container.withCmd(wrap(cmd)).exec()
 		def id = resp.getId()
 		it.startContainerCmd(id).exec()
@@ -284,5 +305,5 @@ task generateFigure << {
 
 task runRscript << {
 	// Execute R script
-  doCmd(client, rscriptCmd)
+  	doCmd(client, rscriptCmd)
 }
