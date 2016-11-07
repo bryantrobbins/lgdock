@@ -1,6 +1,8 @@
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.api.model.Bind
+import com.github.dockerjava.api.model.BuildResponseItem
+import com.github.dockerjava.core.command.BuildImageResultCallback
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FileUtils
 import static com.xlson.groovycsv.CsvParser.parseCsv
@@ -24,7 +26,7 @@ buildscript {
 	}
 
 	dependencies {
-		classpath 'com.github.docker-java:docker-java:0.10.5'
+		classpath 'com.github.docker-java:docker-java:3.0.6'
 		classpath 'commons-io:commons-io:2.4'
 		classpath 'com.xlson.groovycsv:groovycsv:1.0'
 	}
@@ -33,7 +35,7 @@ buildscript {
 // A couple of globals (available only to tasks, not functions)
 def client = DockerClientBuilder.getInstance(dockerUrlVal).build();
 def dockerfileContent = '''
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Bryan Robbins "bryantrobbins@gmail.com"
 RUN apt-get update && apt-get clean
 RUN apt-get install texlive-latex-base texlive-fonts-recommended -y
@@ -44,8 +46,8 @@ WORKDIR /paper
 '''
 
 // Commands
-def latexCmd = "pdflatex ${baseVal}.tex"
-def bibtexCmd = "bibtex ${baseVal}"
+def latexCmd = "pdflatex ${baseVal}-single.tex"
+def bibtexCmd = "bibtex ${baseVal}-single"
 def rscriptCmd = "R CMD BATCH --slave ${rscriptVal} ${outputVal}"
 
 def withClient(client, clos){
@@ -90,23 +92,20 @@ def doCmd(client, cmd){
 	def wd = getCurrentDirectory()
 
 	withClient(client){
-		def container = it.createContainerCmd(imageTag).withVolumes(mount)
+		def container = it.createContainerCmd(imageTag).withVolumes(mount).withBinds(new Bind(wd, mount))
 		def resp = container.withCmd(wrap(cmd)).exec()
 		def id = resp.getId()
-		it.startContainerCmd(id)
-  		.withBinds(new Bind(wd, mount))
-			.exec()
-		it.waitContainerCmd(id)
-			.exec()
+		it.startContainerCmd(id).exec()
+		it.waitContainerCmd(id).exec()
 	}
 }
 
 def deletePaperFiles(base){
-	deleteFile("${base}.log")	
-	deleteFile("${base}.aux")	
-	deleteFile("${base}.blg")	
-	deleteFile("${base}.bbl")	
-	deleteFile("${base}.pdf")	
+	deleteFile("${base}.log")
+	deleteFile("${base}.aux")
+	deleteFile("${base}.blg")
+	deleteFile("${base}.bbl")
+	deleteFile("${base}.pdf")
 }
 
 def getInlineProperty(prop, value, first){
@@ -114,7 +113,7 @@ def getInlineProperty(prop, value, first){
 
 	if(!value.isEmpty()){
 		if(!first){
-			ret += ", "	
+			ret += ", "
 		}
 		ret += "${prop}=${value}"
 	}
@@ -151,22 +150,30 @@ task writeDockerfile <<
 	new File("${dockerfilePath}/Dockerfile").write(dockerfileContent)
 }
 
+
+def callback = new BuildImageResultCallback() {
+    @Override
+    public void onNext(BuildResponseItem item) {
+       System.out.println("" + item);
+       super.onNext(item);
+    }
+}
+
 task buildImage(dependsOn: writeDockerfile) <<
 {
 	def imageTag = getImageTag()
 	withClient(client){
-		def resp = it.buildImageCmd(buildBaseDir).withTag(imageTag).exec();
-		asString(resp)
+		it.buildImageCmd(buildBaseDir).withTag(imageTag).exec(callback).awaitImageId();
 	}
 }
 
 task cleanPaper <<
 {
-	deletePaperFiles(baseVal)
+	deletePaperFiles("${baseVal}-single")
 }
 
 task singleFile << {
-	def input = FileUtils.readFileToString(new File(source))
+	def input = FileUtils.readFileToString(new File("${baseVal}.tex"))
 	def regex = /\\input\{(.+)\}/
 	def matcher = ( input  =~ regex )
 	while(matcher.size() > 0){
@@ -175,7 +182,7 @@ task singleFile << {
 		matcher = ( input  =~ regex )
 	}
 
-	FileUtils.writeStringToFile(new File("${baseVal}.tex"), input)
+	FileUtils.writeStringToFile(new File("${baseVal}-single.tex"), input)
 }
 
 task buildPaper (dependsOn: singleFile) <<
@@ -196,10 +203,10 @@ task buildPaper (dependsOn: singleFile) <<
 task generateTable <<
 {
 	def output = new StringBuffer()
-	
+
 	// Read csv data
 	def csv = FileUtils.readFileToString(new File(csvDataVal))
-	
+
 	// Parse csv data
 	def data = parseCsv(csv, autoDetect:true)
 	def numColumns = data.columns.size()
@@ -237,9 +244,9 @@ task generateTable <<
 
 	output << "\\hline\\end{tabular}\n"
 	output << "\\end{${wrapper}}\n"
-	
+
 	println output.toString()
-	
+
 	if(!outputVal.equals('')){
 		FileUtils.writeStringToFile(new File(outputVal), output.toString());
 	}
@@ -253,7 +260,7 @@ task generateFigure << {
 
 	if(useStarVal){
 		wrapper += "*"
-	}	
+	}
 
 	def params = getInlineProperty("height", heightVal, firstProp)
 	firstProp = params.isEmpty()
@@ -268,7 +275,7 @@ task generateFigure << {
 	output << "\\end{${wrapper}}\n"
 
 	println output.toString()
-	
+
 	if(!outputVal.equals('')){
 		FileUtils.writeStringToFile(new File(outputVal), output.toString());
 	}
@@ -277,5 +284,5 @@ task generateFigure << {
 
 task runRscript << {
 	// Execute R script
-  doCmd(client, rscriptCmd)		
+  doCmd(client, rscriptCmd)
 }
