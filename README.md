@@ -1,21 +1,32 @@
-lgdock is a tool for preparing LaTeX papers. It depends on having Docker and Gradle installed on a host,
+lgdock is a tool for preparing LaTeX papers. It depends on having Docker installed on a host,
 and also works with [boot2docker](http://boot2docker.io/).
 
 ## Usage
 
-To start, you can clone this repository or otherwise drop build.gradle into your paper's directory.
-You will need to have Gradle and Docker installed. Your Docker installation will need to expose
+To start, you can clone this repository or otherwise drop the gradle-related files into your paper's directory:
+* gradlew
+* gradlew.bat
+* gradle/
+* build.gradle
+* gradle.properties
+
+Docker is used to isolate the execution of LaTeX in a container, and Gradle is used to wrap tasks into a pretty nice interface (perhaps
+that's debatable ... but I like it).
+
+You will need to have Docker installed and a Docker daemon running on your machine. Your Docker installation will need to expose
 its HTTP interface. If you are using [boot2docker](http://boot2docker.io/) on a Windows or Mac computer, this is the
 default configuration. If you are on a Linux host with Docker directly installed, check out
-[this blog post](http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html).
+[this blog post](http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html), and if you are on a systemd-
+based system, check [this comment](http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html#comment-41691) 
+under said blog post.
 
-Once you have tools installed, you need to tell gradle where to find Docker and your LaTex file:
+Once you have Docker installed, you need to tell gradle where to find Docker and your LaTex file:
 * base: the base name to use for you final LaTex files
 * dockerUrl: the path to your URL, including protocol, host, and port (e.g., https://192.168.59.103:2376)
 * source: Your LaTeX input file
 
-The script uses Gradle properties for this. You can use the provided gradle.properties file to define them 
-OR just set properties from the command line like so:
+The script uses Gradle properties for this. You can use the provided gradle.properties file to define them (with gradle.properties 
+living in your working directory) OR just set properties from the command line like so:
 
 ```
 gradle -Psource="parts.tex" -Pbase="example" -PdockerUrl="https://..." ...
@@ -26,8 +37,8 @@ of a PDF currently requires running two tasks explicitly.
 (Hopefully, these can be safely linked in the future!)
 
 ```
-gradle buildImage
-gradle buildPaper
+./gradlew buildImage
+./gradlew buildPaper
 ```
 
 This will produce "example.pdf" in your current directory. Note that buildImage only needs to occur
